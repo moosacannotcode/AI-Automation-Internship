@@ -1,0 +1,391 @@
+{
+  "name": "airtable",
+  "nodes": [
+    {
+      "parameters": {
+        "operation": "create",
+        "base": {
+          "__rl": true,
+          "value": "appOpOY8cF0SR280b",
+          "mode": "list",
+          "cachedResultName": "MATalogics AI Operations Base",
+          "cachedResultUrl": "https://airtable.com/appOpOY8cF0SR280b"
+        },
+        "table": {
+          "__rl": true,
+          "value": "tblFpJGZZx5BEkevW",
+          "mode": "list",
+          "cachedResultName": "Clients",
+          "cachedResultUrl": "https://airtable.com/appOpOY8cF0SR280b/tblFpJGZZx5BEkevW"
+        },
+        "columns": {
+          "mappingMode": "defineBelow",
+          "value": {
+            "Status": "In progress",
+            "Name": "Palmer",
+            "Company": "BPL",
+            "Email": "palmer@gmail.com"
+          },
+          "matchingColumns": [],
+          "schema": [
+            {
+              "id": "Client ID",
+              "displayName": "Client ID",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "string",
+              "readOnly": true,
+              "removed": true
+            },
+            {
+              "id": "Name",
+              "displayName": "Name",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": false
+            },
+            {
+              "id": "Company",
+              "displayName": "Company",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": false
+            },
+            {
+              "id": "Status",
+              "displayName": "Status",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "options",
+              "options": [
+                {
+                  "name": "Todo",
+                  "value": "Todo"
+                },
+                {
+                  "name": "In progress",
+                  "value": "In progress"
+                },
+                {
+                  "name": "Done",
+                  "value": "Done"
+                }
+              ],
+              "readOnly": false,
+              "removed": false
+            },
+            {
+              "id": "Email",
+              "displayName": "Email",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": false
+            }
+          ],
+          "attemptToConvertTypes": false,
+          "convertFieldsToString": false
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.airtable",
+      "typeVersion": 2.2,
+      "position": [
+        208,
+        0
+      ],
+      "id": "23c7c392-0b88-4ae7-912c-fb858c0cbf21",
+      "name": "Create a record",
+      "credentials": {
+        "airtableTokenApi": {
+          "id": "PPGk07LACvFkkFMi",
+          "name": "Airtable Personal Access Token account 3"
+        }
+      }
+    },
+    {
+      "parameters": {},
+      "type": "n8n-nodes-base.manualTrigger",
+      "typeVersion": 1,
+      "position": [
+        0,
+        0
+      ],
+      "id": "3dcc5d5a-4eaa-4a9d-9632-44c091c9aa4b",
+      "name": "When clicking ‘Execute workflow’"
+    },
+    {
+      "parameters": {
+        "base": {
+          "__rl": true,
+          "value": "appOpOY8cF0SR280b",
+          "mode": "list",
+          "cachedResultName": "MATalogics AI Operations Base",
+          "cachedResultUrl": "https://airtable.com/appOpOY8cF0SR280b"
+        },
+        "table": {
+          "__rl": true,
+          "value": "tblFpJGZZx5BEkevW",
+          "mode": "list",
+          "cachedResultName": "Clients",
+          "cachedResultUrl": "https://airtable.com/appOpOY8cF0SR280b/tblFpJGZZx5BEkevW"
+        },
+        "id": "={{ $json.id }}",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.airtable",
+      "typeVersion": 2.2,
+      "position": [
+        432,
+        0
+      ],
+      "id": "b6923f59-b5d7-42b9-b130-3dbf10ca4894",
+      "name": "Get a record",
+      "credentials": {
+        "airtableTokenApi": {
+          "id": "PPGk07LACvFkkFMi",
+          "name": "Airtable Personal Access Token account 3"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "operation": "update",
+        "base": {
+          "__rl": true,
+          "value": "appOpOY8cF0SR280b",
+          "mode": "list",
+          "cachedResultName": "MATalogics AI Operations Base",
+          "cachedResultUrl": "https://airtable.com/appOpOY8cF0SR280b"
+        },
+        "table": {
+          "__rl": true,
+          "value": "tblFpJGZZx5BEkevW",
+          "mode": "list",
+          "cachedResultName": "Clients",
+          "cachedResultUrl": "https://airtable.com/appOpOY8cF0SR280b/tblFpJGZZx5BEkevW"
+        },
+        "columns": {
+          "mappingMode": "defineBelow",
+          "value": {
+            "id": "={{ $json.id }}",
+            "Company": "={{ $json.fields.Company }}",
+            "Name": "={{ $json.fields.Name }}",
+            "Email": "={{ $json.fields.Email }}",
+            "Status": "Done"
+          },
+          "matchingColumns": [
+            "id"
+          ],
+          "schema": [
+            {
+              "id": "id",
+              "displayName": "id",
+              "required": false,
+              "defaultMatch": true,
+              "display": true,
+              "type": "string",
+              "readOnly": true,
+              "removed": false
+            },
+            {
+              "id": "Client ID",
+              "displayName": "Client ID",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "string",
+              "readOnly": true,
+              "removed": true
+            },
+            {
+              "id": "Name",
+              "displayName": "Name",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": false
+            },
+            {
+              "id": "Company",
+              "displayName": "Company",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": false
+            },
+            {
+              "id": "Status",
+              "displayName": "Status",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "options",
+              "options": [
+                {
+                  "name": "Todo",
+                  "value": "Todo"
+                },
+                {
+                  "name": "In progress",
+                  "value": "In progress"
+                },
+                {
+                  "name": "Done",
+                  "value": "Done"
+                }
+              ],
+              "readOnly": false,
+              "removed": false
+            },
+            {
+              "id": "Email",
+              "displayName": "Email",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": false
+            }
+          ],
+          "attemptToConvertTypes": false,
+          "convertFieldsToString": false
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.airtable",
+      "typeVersion": 2.2,
+      "position": [
+        656,
+        0
+      ],
+      "id": "7cf1f1ba-1149-4c8f-8411-37de7c12f99e",
+      "name": "Update record",
+      "credentials": {
+        "airtableTokenApi": {
+          "id": "PPGk07LACvFkkFMi",
+          "name": "Airtable Personal Access Token account 3"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "operation": "deleteRecord",
+        "base": {
+          "__rl": true,
+          "value": "appOpOY8cF0SR280b",
+          "mode": "list",
+          "cachedResultName": "MATalogics AI Operations Base",
+          "cachedResultUrl": "https://airtable.com/appOpOY8cF0SR280b"
+        },
+        "table": {
+          "__rl": true,
+          "value": "tblFpJGZZx5BEkevW",
+          "mode": "list",
+          "cachedResultName": "Clients",
+          "cachedResultUrl": "https://airtable.com/appOpOY8cF0SR280b/tblFpJGZZx5BEkevW"
+        },
+        "id": "={{ $json.id }}"
+      },
+      "type": "n8n-nodes-base.airtable",
+      "typeVersion": 2.2,
+      "position": [
+        880,
+        0
+      ],
+      "id": "382460e1-c6c5-453f-b962-6e91c433e44f",
+      "name": "Delete a record",
+      "credentials": {
+        "airtableTokenApi": {
+          "id": "PPGk07LACvFkkFMi",
+          "name": "Airtable Personal Access Token account 3"
+        }
+      }
+    }
+  ],
+  "pinData": {},
+  "connections": {
+    "When clicking ‘Execute workflow’": {
+      "main": [
+        [
+          {
+            "node": "Create a record",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Create a record": {
+      "main": [
+        [
+          {
+            "node": "Get a record",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Get a record": {
+      "main": [
+        [
+          {
+            "node": "Update record",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Update record": {
+      "main": [
+        [
+          {
+            "node": "Delete a record",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "active": false,
+  "settings": {
+    "executionOrder": "v1",
+    "binaryMode": "separate"
+  },
+  "versionId": "7a2b45c9-f017-4a73-92bf-df95f899aa42",
+  "meta": {
+    "templateCredsSetupCompleted": true,
+    "instanceId": "2004e3f64fcaccc5bc2d92f3a76f11c36fd7a68fe5e680420818f5677d1acc0c"
+  },
+  "nodeGroups": [],
+  "id": "cRnHvyW4W244WhrO",
+  "tags": []
+}
