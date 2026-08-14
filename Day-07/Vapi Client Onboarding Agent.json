@@ -1,0 +1,583 @@
+{
+  "name": "Vapi Client Onboarding Agent",
+  "nodes": [
+    {
+      "parameters": {
+        "httpMethod": "POST",
+        "path": "client-onboarding",
+        "responseMode": "responseNode",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.webhook",
+      "typeVersion": 2.1,
+      "position": [
+        0,
+        0
+      ],
+      "id": "a4ac4960-03ff-45d2-9260-5ef3158661e3",
+      "name": "Webhook",
+      "webhookId": "b803d60e-23b0-4aa5-a008-c43bc54f3faf"
+    },
+    {
+      "parameters": {
+        "promptType": "define",
+        "text": "=Analyze the following completed client onboarding record.\n\nCLIENT NAME:\n{{ $json.client_name }}\n\nCOMPANY NAME:\n{{ $json.company_name }}\n\nEMAIL:\n{{ $json.email }}\n\nSERVICE REQUIRED:\n{{ $json.service_required }}\n\nPROJECT DESCRIPTION:\n{{ $json.project_description }}\n\nBUDGET:\n{{ $json.budget }}\n\nClassify this client according to the system instructions.\n\nReturn the required structured classification only.",
+        "hasOutputParser": true,
+        "options": {
+          "systemMessage": "You are the Client Onboarding Classification Agent.\n\nYour only responsibility is to analyze completed client onboarding data and classify the lead.\n\nThe client has already spoken to the Vapi Client Onboarding Agent. Do not ask questions. Do not communicate with the client.\n\nYou must generate exactly four outputs:\n\n1. service_category\n2. priority\n3. summary\n4. next_action\n\n\nSERVICE CATEGORY\n\nDetermine the most appropriate category from the client's service requirement and project description.\n\nUse one of these categories whenever applicable:\n\n- Web & Mobile Development\n- AI Automation\n- AI Chatbot\n- Voice Agent\n- CRM Automation\n- Lead Generation\n- E-commerce Development\n- Other\n\nChoose the category that best matches the actual client requirement.\n\nDo not invent requirements or services.\n\n\nPRIORITY\n\nDetermine priority strictly from the client's budget.\n\nThe required priority rules are:\n\nBudget >= 500,000 PKR → HIGH\n\nBudget 200,000–499,999 PKR → MEDIUM\n\nBudget < 200,000 PKR → LOW\n\n\nBUDGET ACCURACY\n\nPreserve the client's stated budget.\n\nDo not alter the numerical value.\n\nDo not confuse PKR with another currency.\n\nDo not convert currencies.\n\nExamples:\n\n500,000 PKR → HIGH\n\napproximately 500,000 PKR → HIGH\n\n600,000 PKR → HIGH\n\n499,999 PKR → MEDIUM\n\n300,000 PKR → MEDIUM\n\n200,000 PKR → MEDIUM\n\n199,999 PKR → LOW\n\n100,000 PKR → LOW\n\n\nAPPROXIMATE VALUES\n\nIf the client uses expressions such as:\n\n\"around 500,000 PKR\"\n\"approximately 500k PKR\"\n\"about five lakh PKR\"\n\ninterpret the numerical amount accurately.\n\nFive lakh PKR = 500,000 PKR.\n\n\nBUDGET RANGES\n\nIf the client gives a budget range, consider the stated range when determining priority.\n\nDo not invent a single value that was not provided.\n\nIf the range crosses multiple priority levels, use the lower end of the stated range for conservative classification.\n\nFor example:\n\n\"300,000 to 600,000 PKR\"\n\nshould be classified as MEDIUM because the lower end is 300,000 PKR.\n\n\nCURRENCY\n\nThe priority thresholds apply specifically to PKR.\n\nIf the client provides a currency other than PKR, do not pretend that the amount is PKR.\n\nDo not perform an unsupported currency conversion.\n\nIf the currency is unclear, use the available information and do not invent a conversion.\n\n\nSUMMARY\n\nCreate a concise one-sentence summary of the client's project.\n\nInclude the company/client and primary requirement where appropriate.\n\nUse only information supplied by the client.\n\nDo not invent technical requirements.\n\n\nNEXT ACTION\n\nRecommend the most appropriate business action based on the client's request.\n\nExamples:\n\n- Schedule technical consultation\n- Schedule discovery call\n- Contact client for requirements clarification\n- Prepare project proposal\n- Schedule product demonstration\n\nChoose the action that best fits the client's situation.\n\n\nOUTPUT\n\nReturn exactly these four fields:\n\nservice_category\npriority\nsummary\nnext_action\n\nDo not return explanations.\n\nDo not return markdown.\n\nDo not return additional fields."
+        }
+      },
+      "type": "@n8n/n8n-nodes-langchain.agent",
+      "typeVersion": 3.1,
+      "position": [
+        448,
+        0
+      ],
+      "id": "24cec9a0-0ee1-4685-8cd7-f6f2dbedf0d7",
+      "name": "AI Agent"
+    },
+    {
+      "parameters": {
+        "model": {
+          "__rl": true,
+          "mode": "list",
+          "value": "gpt-5-mini"
+        },
+        "builtInTools": {},
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.lmChatOpenAi",
+      "typeVersion": 1.3,
+      "position": [
+        304,
+        272
+      ],
+      "id": "37e5c24e-8487-4422-85c5-f4f1d0097bd9",
+      "name": "OpenAI Chat Model",
+      "credentials": {
+        "openAiApi": {
+          "id": "zuxh2FKga3LdBWsI",
+          "name": "n8n free OpenAI API credits"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "respondWith": "json",
+        "responseBody": "{\n  \"success\": true,\n  \"message\": \"Client onboarding processed successfully.\"\n}",
+        "options": {
+          "responseCode": 200
+        }
+      },
+      "type": "n8n-nodes-base.respondToWebhook",
+      "typeVersion": 1.5,
+      "position": [
+        1536,
+        32
+      ],
+      "id": "11a6ab47-662d-47fc-ba05-1c9f5661f4b5",
+      "name": "Respond to Webhook"
+    },
+    {
+      "parameters": {
+        "jsCode": "const items = $input.all();\n\nreturn items.map(item => {\n  const data = item.json;\n\n  // Extract arguments from the Vapi tool call\n  const args =\n    data.body?.message?.toolCalls?.[0]?.function?.arguments || {};\n\n  return {\n    json: {\n      client_name: args.client_name || \"\",\n      company_name: args.company_name || \"\",\n      email: args.email || \"\",\n      service_required: args.service_required || \"\",\n      project_description: args.project_description || \"\",\n      budget: args.budget || \"\"\n    }\n  };\n});"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        224,
+        0
+      ],
+      "id": "b9884fac-951c-4c1b-872b-8e4518403726",
+      "name": "Code in JavaScript"
+    },
+    {
+      "parameters": {
+        "jsonSchemaExample": "{\n  \"service_category\": \"Web & Mobile Development\",\n  \"priority\": \"HIGH\",\n  \"summary\": \"ABC Restaurant requires a website and mobile application for online food ordering.\",\n  \"next_action\": \"Schedule technical consultation\"\n}"
+      },
+      "type": "@n8n/n8n-nodes-langchain.outputParserStructured",
+      "typeVersion": 1.3,
+      "position": [
+        656,
+        256
+      ],
+      "id": "36ea78ed-95f7-45a7-80ec-26b17673b99b",
+      "name": "Structured Output Parser"
+    },
+    {
+      "parameters": {
+        "jsCode": "const client = $('Code in JavaScript').first().json;\nconst classification = $('AI Agent').first().json.output;\n\nreturn [\n  {\n    json: {\n      client_name: client.client_name,\n      company_name: client.company_name,\n      email: client.email,\n      service_required: client.service_required,\n      project_description: client.project_description,\n      budget: client.budget,\n\n      service_category: classification.service_category,\n      priority: classification.priority,\n      summary: classification.summary,\n      next_action: classification.next_action\n    }\n  }\n];"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        816,
+        0
+      ],
+      "id": "0718b473-92ef-4ff6-a527-f8e8c8005818",
+      "name": "Code in JavaScript1"
+    },
+    {
+      "parameters": {
+        "select": "channel",
+        "channelId": {
+          "__rl": true,
+          "value": "C0BPAD7QBSQ",
+          "mode": "id"
+        },
+        "text": "=🚨 New Client Onboarding\n\nClient: {{ $json.client_name }}\nCompany: {{ $json.company_name }}\n\nService: {{ $json.service_category }}\nBudget: {{ $json.budget }}\nPriority: {{ $json.priority }}\n\nSummary:\n{{ $json.summary }}\n\nNext Action:\n{{ $json.next_action }}",
+        "otherOptions": {}
+      },
+      "type": "n8n-nodes-base.slack",
+      "typeVersion": 2.6,
+      "position": [
+        1088,
+        -160
+      ],
+      "id": "71c22c07-c2d8-4840-96d0-02dc1fc5b664",
+      "name": "Send a message",
+      "webhookId": "0169f65c-6fb9-4001-8ddf-05445929d4c8",
+      "credentials": {
+        "slackApi": {
+          "id": "eLv3BkRMLIwNrFIG",
+          "name": "Slack account 2"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "resource": "databasePage",
+        "dataSourceId": {
+          "__rl": true,
+          "value": "147b28c4-2f97-832e-89df-078b0062cd50",
+          "mode": "list",
+          "cachedResultName": "Client Onboarding",
+          "cachedResultUrl": "https://app.notion.com/p/3bcb28c42f97804ab0d5f35565c233b6"
+        },
+        "title": "={{ $json.client_name }} — {{ $json.company_name }}",
+        "propertiesUi": {
+          "propertyValues": [
+            {
+              "key": "Company Name|rich_text",
+              "textContent": "={{ $json.company_name }}"
+            },
+            {
+              "key": "Email|email",
+              "emailValue": "={{ $json.email }}"
+            },
+            {
+              "key": "Service Required|rich_text",
+              "textContent": "={{ $json.service_required }}"
+            },
+            {
+              "key": "Project Description|rich_text",
+              "textContent": "={{ $json.project_description }}"
+            },
+            {
+              "key": "Budget|rich_text",
+              "textContent": "={{ $json.budget }}"
+            },
+            {
+              "key": "Service Category|select",
+              "selectValue": "={{ $json.service_category }}"
+            },
+            {
+              "key": "Priority|select",
+              "selectValue": "={{ $json.priority }}"
+            },
+            {
+              "key": "Summary|rich_text",
+              "textContent": "={{ $json.summary }}"
+            },
+            {
+              "key": "Next Action|rich_text",
+              "textContent": "={{ $json.next_action }}"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.notion",
+      "typeVersion": 3,
+      "position": [
+        1088,
+        208
+      ],
+      "id": "8df2e1c5-a06c-4ef1-a8c9-f88985bf93d9",
+      "name": "Create a database page",
+      "credentials": {
+        "notionApi": {
+          "id": "q0l6aunb2sD7CbI4",
+          "name": "Notion account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "numberInputs": 3
+      },
+      "type": "n8n-nodes-base.merge",
+      "typeVersion": 3.2,
+      "position": [
+        1344,
+        16
+      ],
+      "id": "84969eee-acd9-404e-a93f-fc20f0caad8d",
+      "name": "Merge"
+    },
+    {
+      "parameters": {
+        "operation": "create",
+        "base": {
+          "__rl": true,
+          "value": "appBo2gpr7Xr8tQRD",
+          "mode": "list",
+          "cachedResultName": "Vapi Client Onboarding",
+          "cachedResultUrl": "https://airtable.com/appBo2gpr7Xr8tQRD"
+        },
+        "table": {
+          "__rl": true,
+          "value": "tblE7sVmJYCiDRvAO",
+          "mode": "list",
+          "cachedResultName": "Table 1",
+          "cachedResultUrl": "https://airtable.com/appBo2gpr7Xr8tQRD/tblE7sVmJYCiDRvAO"
+        },
+        "columns": {
+          "mappingMode": "defineBelow",
+          "value": {
+            "Client Name": "={{ $json.client_name }}",
+            "Company Name": "={{ $json.company_name }}",
+            "Email": "={{ $json.email }}",
+            "Service Required": "={{ $json.service_required }}",
+            "Project Description": "={{ $json.project_description }}",
+            "Budget": "={{ $json.budget }}",
+            "Service Category": "={{ $json.service_category }}",
+            "Priority": "={{ $json.priority }}",
+            "Summary": "={{ $json.summary }}",
+            "Next Action": "={{ $json.next_action }}"
+          },
+          "matchingColumns": [],
+          "schema": [
+            {
+              "id": "Client Name",
+              "displayName": "Client Name",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": false
+            },
+            {
+              "id": "Company Name",
+              "displayName": "Company Name",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": false
+            },
+            {
+              "id": "Email",
+              "displayName": "Email",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": false
+            },
+            {
+              "id": "Service Required",
+              "displayName": "Service Required",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": false
+            },
+            {
+              "id": "Project Description",
+              "displayName": "Project Description",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": false
+            },
+            {
+              "id": "Budget",
+              "displayName": "Budget",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": false
+            },
+            {
+              "id": "Service Category",
+              "displayName": "Service Category",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "options",
+              "options": [
+                {
+                  "name": "AI Automation",
+                  "value": "AI Automation"
+                },
+                {
+                  "name": "Voice Agent",
+                  "value": "Voice Agent"
+                },
+                {
+                  "name": "Lead Generation",
+                  "value": "Lead Generation"
+                },
+                {
+                  "name": "Web & Mobile Development",
+                  "value": "Web & Mobile Development"
+                },
+                {
+                  "name": "AI Chatbot",
+                  "value": "AI Chatbot"
+                },
+                {
+                  "name": "CRM Automation",
+                  "value": "CRM Automation"
+                },
+                {
+                  "name": "E-Commerce Development",
+                  "value": "E-Commerce Development"
+                },
+                {
+                  "name": "Other",
+                  "value": "Other"
+                }
+              ],
+              "readOnly": false,
+              "removed": false
+            },
+            {
+              "id": "Priority",
+              "displayName": "Priority",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "options",
+              "options": [
+                {
+                  "name": "HIGH",
+                  "value": "HIGH"
+                },
+                {
+                  "name": "MEDIUM",
+                  "value": "MEDIUM"
+                },
+                {
+                  "name": "LOW",
+                  "value": "LOW"
+                }
+              ],
+              "readOnly": false,
+              "removed": false
+            },
+            {
+              "id": "Summary",
+              "displayName": "Summary",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": false
+            },
+            {
+              "id": "Next Action",
+              "displayName": "Next Action",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": false
+            }
+          ],
+          "attemptToConvertTypes": false,
+          "convertFieldsToString": false
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.airtable",
+      "typeVersion": 2.2,
+      "position": [
+        1072,
+        16
+      ],
+      "id": "885ffadc-ad5e-4bdc-8a98-1adfa1490595",
+      "name": "Create a record",
+      "credentials": {
+        "airtableTokenApi": {
+          "id": "PPGk07LACvFkkFMi",
+          "name": "Airtable Personal Access Token account 3"
+        }
+      }
+    }
+  ],
+  "pinData": {},
+  "connections": {
+    "Webhook": {
+      "main": [
+        [
+          {
+            "node": "Code in JavaScript",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "OpenAI Chat Model": {
+      "ai_languageModel": [
+        [
+          {
+            "node": "AI Agent",
+            "type": "ai_languageModel",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "AI Agent": {
+      "main": [
+        [
+          {
+            "node": "Code in JavaScript1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Code in JavaScript": {
+      "main": [
+        [
+          {
+            "node": "AI Agent",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Structured Output Parser": {
+      "ai_outputParser": [
+        [
+          {
+            "node": "AI Agent",
+            "type": "ai_outputParser",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Code in JavaScript1": {
+      "main": [
+        [
+          {
+            "node": "Send a message",
+            "type": "main",
+            "index": 0
+          },
+          {
+            "node": "Create a database page",
+            "type": "main",
+            "index": 0
+          },
+          {
+            "node": "Create a record",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Send a message": {
+      "main": [
+        [
+          {
+            "node": "Merge",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Create a database page": {
+      "main": [
+        [
+          {
+            "node": "Merge",
+            "type": "main",
+            "index": 2
+          }
+        ]
+      ]
+    },
+    "Respond to Webhook": {
+      "main": [
+        []
+      ]
+    },
+    "Merge": {
+      "main": [
+        [
+          {
+            "node": "Respond to Webhook",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Create a record": {
+      "main": [
+        [
+          {
+            "node": "Merge",
+            "type": "main",
+            "index": 1
+          }
+        ]
+      ]
+    }
+  },
+  "active": true,
+  "settings": {
+    "executionOrder": "v1",
+    "binaryMode": "separate",
+    "availableInMCP": false
+  },
+  "versionId": "0c870833-d714-4af2-852a-86ae0dbfa12f",
+  "meta": {
+    "templateCredsSetupCompleted": true,
+    "instanceId": "2004e3f64fcaccc5bc2d92f3a76f11c36fd7a68fe5e680420818f5677d1acc0c"
+  },
+  "nodeGroups": [],
+  "id": "lDVZ39PSCc4Uli21",
+  "tags": []
+}
