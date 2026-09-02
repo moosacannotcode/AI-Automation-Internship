@@ -1,0 +1,785 @@
+{
+  "name": "Task 7 AI Customer Conversation Memory",
+  "nodes": [
+    {
+      "parameters": {
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.chatTrigger",
+      "typeVersion": 1.4,
+      "position": [
+        -1840,
+        -144
+      ],
+      "id": "2b09b074-9645-4b4b-85c5-0c33a002ba42",
+      "name": "When chat message received",
+      "webhookId": "a45b8be7-6429-4bda-b3ef-c7888e3b1fbe"
+    },
+    {
+      "parameters": {
+        "operation": "select",
+        "schema": {
+          "__rl": true,
+          "value": "public",
+          "mode": "list",
+          "cachedResultName": "public"
+        },
+        "table": {
+          "__rl": true,
+          "value": "customers",
+          "mode": "list",
+          "cachedResultName": "customers"
+        },
+        "limit": 1,
+        "where": {
+          "values": [
+            {
+              "column": "name",
+              "value": "={{ $('When chat message received').first().json.chatInput.match(/My name is\\s+([A-Za-z]+(?:\\s+[A-Za-z]+)*?)(?:\\s+and\\b|\\s*[.,]|$)/i)?.[1]?.trim() }}"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.postgres",
+      "typeVersion": 2.7,
+      "position": [
+        -1168,
+        -48
+      ],
+      "id": "71fb5701-5318-43ae-9182-1a66c4a288dc",
+      "name": "Find Customer",
+      "alwaysOutputData": true,
+      "credentials": {
+        "postgres": {
+          "id": "ILZtf2jmjhNjyOFF",
+          "name": "Postgres account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "loose",
+            "version": 3
+          },
+          "conditions": [
+            {
+              "id": "e4228ada-2453-4669-9847-16195ac504ac",
+              "leftValue": "={{ $json.id }}",
+              "rightValue": "",
+              "operator": {
+                "type": "string",
+                "operation": "notEmpty",
+                "singleValue": true
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "looseTypeValidation": true,
+        "options": {}
+      },
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.3,
+      "position": [
+        -1440,
+        -144
+      ],
+      "id": "c582b4a6-0a6b-443e-b2cc-12d12cb41234",
+      "name": "If"
+    },
+    {
+      "parameters": {
+        "schema": {
+          "__rl": true,
+          "mode": "list",
+          "value": "public"
+        },
+        "table": {
+          "__rl": true,
+          "value": "messages",
+          "mode": "list",
+          "cachedResultName": "messages"
+        },
+        "columns": {
+          "mappingMode": "defineBelow",
+          "value": {
+            "conversation_id": "={{ $('Find Conversation by Session').first().json.id }}",
+            "role": "user",
+            "message": "={{ $('When chat message received').first().json.chatInput }}"
+          },
+          "matchingColumns": [
+            "id"
+          ],
+          "schema": [
+            {
+              "id": "id",
+              "displayName": "id",
+              "required": false,
+              "defaultMatch": true,
+              "display": true,
+              "type": "number",
+              "canBeUsedToMatch": true,
+              "removed": true
+            },
+            {
+              "id": "conversation_id",
+              "displayName": "conversation_id",
+              "required": true,
+              "defaultMatch": false,
+              "display": true,
+              "type": "number",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "role",
+              "displayName": "role",
+              "required": true,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "message",
+              "displayName": "message",
+              "required": true,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "created_at",
+              "displayName": "created_at",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "dateTime",
+              "canBeUsedToMatch": true,
+              "removed": false
+            }
+          ],
+          "attemptToConvertTypes": false,
+          "convertFieldsToString": false
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.postgres",
+      "typeVersion": 2.7,
+      "position": [
+        -960,
+        -272
+      ],
+      "id": "4a8d8e22-5911-4410-8bb8-79715079a33a",
+      "name": "Save Current Mesaage",
+      "credentials": {
+        "postgres": {
+          "id": "ILZtf2jmjhNjyOFF",
+          "name": "Postgres account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "schema": {
+          "__rl": true,
+          "value": "public",
+          "mode": "list",
+          "cachedResultName": "public"
+        },
+        "table": {
+          "__rl": true,
+          "value": "messages",
+          "mode": "list",
+          "cachedResultName": "messages"
+        },
+        "columns": {
+          "mappingMode": "defineBelow",
+          "value": {
+            "conversation_id": "={{ Number($json.id) }}",
+            "role": "user",
+            "message": "={{ $('When chat message received').item.json.chatInput }}"
+          },
+          "matchingColumns": [
+            "id"
+          ],
+          "schema": [
+            {
+              "id": "id",
+              "displayName": "id",
+              "required": false,
+              "defaultMatch": true,
+              "display": true,
+              "type": "number",
+              "canBeUsedToMatch": true,
+              "removed": true
+            },
+            {
+              "id": "conversation_id",
+              "displayName": "conversation_id",
+              "required": true,
+              "defaultMatch": false,
+              "display": true,
+              "type": "number",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "role",
+              "displayName": "role",
+              "required": true,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "message",
+              "displayName": "message",
+              "required": true,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "created_at",
+              "displayName": "created_at",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "dateTime",
+              "canBeUsedToMatch": true
+            }
+          ],
+          "attemptToConvertTypes": false,
+          "convertFieldsToString": false
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.postgres",
+      "typeVersion": 2.7,
+      "position": [
+        -720,
+        -48
+      ],
+      "id": "6c771575-8346-40c0-a617-b591c1b15402",
+      "name": "Save Initial Message",
+      "credentials": {
+        "postgres": {
+          "id": "ILZtf2jmjhNjyOFF",
+          "name": "Postgres account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "operation": "select",
+        "schema": {
+          "__rl": true,
+          "mode": "list",
+          "value": "public"
+        },
+        "table": {
+          "__rl": true,
+          "value": "messages",
+          "mode": "list",
+          "cachedResultName": "messages"
+        },
+        "returnAll": true,
+        "where": {
+          "values": [
+            {
+              "column": "conversation_id",
+              "value": "={{ $('Find Conversation by Session').first().json.id }}"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.postgres",
+      "typeVersion": 2.7,
+      "position": [
+        -656,
+        -272
+      ],
+      "id": "29ba5bf6-a6e7-44b5-bc5a-ebd2982aff63",
+      "name": "Retrieve All Conversation Messages",
+      "credentials": {
+        "postgres": {
+          "id": "ILZtf2jmjhNjyOFF",
+          "name": "Postgres account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "promptType": "define",
+        "text": "={{ \n  `Current customer message:\n${$json.currentMessage}\n\nPrevious conversation:\n${$json.conversationHistory}`\n}}",
+        "options": {
+          "systemMessage": "You are a customer support AI assistant.\n\nUse the conversation history provided to you to maintain continuity with the customer.\n\nYou should remember:\n- Customer name\n- Previous questions\n- Previous answers\n- Previous conversation\n- Current conversation\n\nUse the provided conversation history as persistent memory.\nDo not invent information that is not present in the conversation history or current request.\n\nRespond naturally and helpfully to the customer's current message."
+        }
+      },
+      "type": "@n8n/n8n-nodes-langchain.agent",
+      "typeVersion": 3.1,
+      "position": [
+        16,
+        -128
+      ],
+      "id": "e0b7d8ac-94f4-4f44-bd8e-6167b1b3aa44",
+      "name": "AI Agent"
+    },
+    {
+      "parameters": {
+        "schema": {
+          "__rl": true,
+          "mode": "list",
+          "value": "public"
+        },
+        "table": {
+          "__rl": true,
+          "value": "messages",
+          "mode": "list",
+          "cachedResultName": "messages"
+        },
+        "columns": {
+          "mappingMode": "defineBelow",
+          "value": {
+            "role": "=assistant",
+            "message": "={{ $('AI Agent').first().json.output }}",
+            "conversation_id": "={{ $('Format Conversation History').first().json.conversationId }}"
+          },
+          "matchingColumns": [
+            "id"
+          ],
+          "schema": [
+            {
+              "id": "id",
+              "displayName": "id",
+              "required": false,
+              "defaultMatch": true,
+              "display": true,
+              "type": "number",
+              "canBeUsedToMatch": true,
+              "removed": true
+            },
+            {
+              "id": "conversation_id",
+              "displayName": "conversation_id",
+              "required": true,
+              "defaultMatch": false,
+              "display": true,
+              "type": "number",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "role",
+              "displayName": "role",
+              "required": true,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "message",
+              "displayName": "message",
+              "required": true,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "created_at",
+              "displayName": "created_at",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "dateTime",
+              "canBeUsedToMatch": true
+            }
+          ],
+          "attemptToConvertTypes": false,
+          "convertFieldsToString": false
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.postgres",
+      "typeVersion": 2.7,
+      "position": [
+        368,
+        -128
+      ],
+      "id": "bbb23839-7555-4fbc-a70a-324be2d69117",
+      "name": "Save New Messages",
+      "credentials": {
+        "postgres": {
+          "id": "ILZtf2jmjhNjyOFF",
+          "name": "Postgres account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "jsCode": "const messages = $input.all();\n\nconst conversationHistory = messages\n  .map(item => {\n    const role = item.json.role || 'unknown';\n    const message = item.json.message || '';\n\n    return `${role.toUpperCase()}: ${message}`;\n  })\n  .join('\\n');\n\nconst conversationId = messages[0]?.json.conversation_id;\n\nconst currentMessage = $('When chat message received').first().json.chatInput;\n\nreturn [\n  {\n    json: {\n      conversationId,\n      conversationHistory,\n      currentMessage\n    }\n  }\n];"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        -208,
+        -128
+      ],
+      "id": "25bc5ed1-eeb2-4d0d-ab37-816fb4ddf5ae",
+      "name": "Format Conversation History"
+    },
+    {
+      "parameters": {
+        "model": {
+          "__rl": true,
+          "mode": "list",
+          "value": "gpt-5-mini"
+        },
+        "builtInTools": {},
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.lmChatOpenAi",
+      "typeVersion": 1.3,
+      "position": [
+        16,
+        64
+      ],
+      "id": "32163ed8-9d66-4846-b7d9-c9e0aec0db88",
+      "name": "OpenAI Chat Model",
+      "credentials": {
+        "openAiApi": {
+          "id": "AyavCJSpYFPQnT9U",
+          "name": "n8n free OpenAI API credits"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "operation": "select",
+        "schema": {
+          "__rl": true,
+          "mode": "list",
+          "value": "public"
+        },
+        "table": {
+          "__rl": true,
+          "value": "conversations",
+          "mode": "list",
+          "cachedResultName": "conversations"
+        },
+        "limit": 1,
+        "where": {
+          "values": [
+            {
+              "column": "session_id",
+              "value": "={{ $('When chat message received').first().json.sessionId }}"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.postgres",
+      "typeVersion": 2.7,
+      "position": [
+        -1632,
+        -144
+      ],
+      "id": "8671ddc3-2e2c-4e3c-beac-e4d9f7588d48",
+      "name": "Find Conversation by Session",
+      "alwaysOutputData": true,
+      "credentials": {
+        "postgres": {
+          "id": "ILZtf2jmjhNjyOFF",
+          "name": "Postgres account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "operation": "select",
+        "schema": {
+          "__rl": true,
+          "mode": "list",
+          "value": "public"
+        },
+        "table": {
+          "__rl": true,
+          "value": "messages",
+          "mode": "list",
+          "cachedResultName": "messages"
+        },
+        "returnAll": true,
+        "where": {
+          "values": [
+            {
+              "column": "conversation_id",
+              "value": "={{ $('Create New Conversation').first().json.id }}"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.postgres",
+      "typeVersion": 2.7,
+      "position": [
+        -496,
+        -48
+      ],
+      "id": "c61e5a0c-d41d-4b67-88b2-e1dd7fa1d33c",
+      "name": "Retrieve All Conversation Messages (New)",
+      "credentials": {
+        "postgres": {
+          "id": "ILZtf2jmjhNjyOFF",
+          "name": "Postgres account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "schema": {
+          "__rl": true,
+          "mode": "list",
+          "value": "public"
+        },
+        "table": {
+          "__rl": true,
+          "value": "conversations",
+          "mode": "list",
+          "cachedResultName": "conversations"
+        },
+        "columns": {
+          "mappingMode": "defineBelow",
+          "value": {
+            "customer_id": "={{ $('Find Customer').first().json.id }}",
+            "session_id": "={{ $('When chat message received').first().json.sessionId }}"
+          },
+          "matchingColumns": [
+            "id"
+          ],
+          "schema": [
+            {
+              "id": "id",
+              "displayName": "id",
+              "required": false,
+              "defaultMatch": true,
+              "display": true,
+              "type": "number",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "customer_id",
+              "displayName": "customer_id",
+              "required": true,
+              "defaultMatch": false,
+              "display": true,
+              "type": "number",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "created_at",
+              "displayName": "created_at",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "dateTime",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "session_id",
+              "displayName": "session_id",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            }
+          ],
+          "attemptToConvertTypes": false,
+          "convertFieldsToString": false
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.postgres",
+      "typeVersion": 2.7,
+      "position": [
+        -944,
+        -48
+      ],
+      "id": "512106a2-f884-4fe6-bf7e-3c806b402a73",
+      "name": "Create New Conversation",
+      "credentials": {
+        "postgres": {
+          "id": "ILZtf2jmjhNjyOFF",
+          "name": "Postgres account"
+        }
+      }
+    }
+  ],
+  "pinData": {},
+  "connections": {
+    "When chat message received": {
+      "main": [
+        [
+          {
+            "node": "Find Conversation by Session",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Find Customer": {
+      "main": [
+        [
+          {
+            "node": "Create New Conversation",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "If": {
+      "main": [
+        [
+          {
+            "node": "Save Current Mesaage",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Find Customer",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Save Current Mesaage": {
+      "main": [
+        [
+          {
+            "node": "Retrieve All Conversation Messages",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Save Initial Message": {
+      "main": [
+        [
+          {
+            "node": "Retrieve All Conversation Messages (New)",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Retrieve All Conversation Messages": {
+      "main": [
+        [
+          {
+            "node": "Format Conversation History",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "AI Agent": {
+      "main": [
+        [
+          {
+            "node": "Save New Messages",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Format Conversation History": {
+      "main": [
+        [
+          {
+            "node": "AI Agent",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "OpenAI Chat Model": {
+      "ai_languageModel": [
+        [
+          {
+            "node": "AI Agent",
+            "type": "ai_languageModel",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Find Conversation by Session": {
+      "main": [
+        [
+          {
+            "node": "If",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Retrieve All Conversation Messages (New)": {
+      "main": [
+        [
+          {
+            "node": "Format Conversation History",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Create New Conversation": {
+      "main": [
+        [
+          {
+            "node": "Save Initial Message",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "active": false,
+  "settings": {
+    "executionOrder": "v1",
+    "binaryMode": "separate"
+  },
+  "versionId": "c26834e7-ca19-4153-b1bf-34d7434df78b",
+  "meta": {
+    "templateCredsSetupCompleted": true,
+    "instanceId": "366244d705286eefc15c46f5d640811110d4cd647823dce29c26e9fecb71ae7e"
+  },
+  "nodeGroups": [],
+  "id": "VcyU6RBW6unumJe9",
+  "tags": []
+}
