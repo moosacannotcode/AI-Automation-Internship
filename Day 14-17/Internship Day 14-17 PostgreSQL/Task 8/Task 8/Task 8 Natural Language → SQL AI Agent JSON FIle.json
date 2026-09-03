@@ -1,0 +1,219 @@
+{
+  "name": "Task 8 Natural Language → SQL AI Agent",
+  "nodes": [
+    {
+      "parameters": {
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.chatTrigger",
+      "typeVersion": 1.4,
+      "position": [
+        -592,
+        -16
+      ],
+      "id": "f24cbc6c-5ca5-4e38-bcbd-53de09ad5673",
+      "name": "When chat message received",
+      "webhookId": "ad5629b4-22db-449c-8b6d-d03068943893"
+    },
+    {
+      "parameters": {
+        "model": {
+          "__rl": true,
+          "mode": "list",
+          "value": "gpt-5-mini"
+        },
+        "builtInTools": {},
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.lmChatOpenAi",
+      "typeVersion": 1.3,
+      "position": [
+        -368,
+        224
+      ],
+      "id": "c62f87c1-5b64-4f38-9b46-be959c0e78ef",
+      "name": "OpenAI Chat Model",
+      "credentials": {
+        "openAiApi": {
+          "id": "AyavCJSpYFPQnT9U",
+          "name": "n8n free OpenAI API credits"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "operation": "executeQuery",
+        "query": "{{ $json.output }}",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.postgres",
+      "typeVersion": 2.7,
+      "position": [
+        0,
+        -16
+      ],
+      "id": "477998fa-939f-441e-93d9-a2c877faf80d",
+      "name": "Execute Generated SQL",
+      "credentials": {
+        "postgres": {
+          "id": "ILZtf2jmjhNjyOFF",
+          "name": "Postgres account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "promptType": "define",
+        "text": "=User question:\n{{ $('When chat message received').first().json.chatInput }}\n\nDatabase results:\n{{ JSON.stringify($json.queryResults, null, 2) }}\n\nUsing ONLY these database results, answer the user's question.\n\nInclude EVERY result row.\nDo not omit any category or value.\nDo not invent information.\nReturn one complete, concise answer.",
+        "options": {
+          "systemMessage": "You are a database results assistant.\n\nYour job is to convert PostgreSQL query results into clear, concise, human-readable answers.\n\nRules:\n- Answer the user's original question using ONLY the database result provided.\n- Never invent or assume data.\n- Do not generate SQL.\n- Do not modify or interpret the database structure.\n- Keep the answer concise and professional."
+        }
+      },
+      "type": "@n8n/n8n-nodes-langchain.agent",
+      "typeVersion": 3.1,
+      "position": [
+        480,
+        16
+      ],
+      "id": "50653fb6-f49c-4e62-9506-6509e812bdcb",
+      "name": "Generate Human-Readable Answer"
+    },
+    {
+      "parameters": {
+        "model": {
+          "__rl": true,
+          "mode": "list",
+          "value": "gpt-5-mini"
+        },
+        "builtInTools": {},
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.lmChatOpenAi",
+      "typeVersion": 1.3,
+      "position": [
+        448,
+        224
+      ],
+      "id": "56026186-8508-4ecc-9dd9-75bf70a5d232",
+      "name": "OpenAI Chat Model1",
+      "credentials": {
+        "openAiApi": {
+          "id": "AyavCJSpYFPQnT9U",
+          "name": "n8n free OpenAI API credits"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "promptType": "define",
+        "text": "={{ $json.chatInput }}",
+        "options": {
+          "systemMessage": "You are a PostgreSQL SQL generation assistant.\n\nYour ONLY job is to convert the user's natural-language question into ONE valid PostgreSQL SELECT query.\n\nDATABASE SCHEMA\n\nThe database contains exactly one table relevant to this workflow:\n\npublic.task8_leads\n\nColumns:\n\nid\nname\nemail\ncompany\nsource\nlead_score\nlead_status\n\nIMPORTANT TABLE RULE\n\nAlways query:\n\npublic.task8_leads\n\nNever use:\nleads\npublic.leads\ntask8_leads with a different schema\nor any other table.\n\nSQL RULES\n\n1. Generate exactly ONE PostgreSQL SELECT statement.\n2. Return ONLY the SQL query.\n3. Do not return explanations.\n4. Do not return natural-language answers.\n5. Do not return markdown.\n6. Do not use code fences.\n7. Do not invent columns.\n8. Do not invent tables.\n9. Never modify the database.\n10. Never generate INSERT, UPDATE, DELETE, DROP, ALTER, TRUNCATE, CREATE, or any other destructive/write operation.\n11. Use only the columns listed in the schema.\n12. Use aggregate functions such as COUNT, AVG, MIN, or MAX when required.\n13. Use GROUP BY when the user asks for results grouped by a column.\n14. Use ORDER BY when ranking or sorting is requested.\n15. The generated SQL must be directly executable by PostgreSQL.\n\nQUERY EXAMPLES\n\nUser:\nHow many leads do we have?\n\nSQL:\nSELECT COUNT(*) AS total_leads FROM public.task8_leads;\n\nUser:\nShow me leads with a score above 70.\n\nSQL:\nSELECT id, name, email, company, source, lead_score, lead_status FROM public.task8_leads WHERE lead_score > 70 ORDER BY lead_score DESC;\n\nUser:\nHow many leads came from each source?\n\nSQL:\nSELECT source, COUNT(*) AS lead_count FROM public.task8_leads GROUP BY source ORDER BY lead_count DESC;\n\nUser:\nWhat is the average lead score?\n\nSQL:\nSELECT AVG(lead_score) AS average_lead_score FROM public.task8_leads;\n\nUser:\nShow me qualified leads.\n\nSQL:\nSELECT id, name, email, company, source, lead_score, lead_status FROM public.task8_leads WHERE lead_status = 'Qualified';\n\nFINAL REQUIREMENT\n\nAlways respond with ONLY the PostgreSQL SELECT query."
+        }
+      },
+      "type": "@n8n/n8n-nodes-langchain.agent",
+      "typeVersion": 3.1,
+      "position": [
+        -368,
+        -16
+      ],
+      "id": "8ff75459-54aa-4e37-ba82-a0c418094ede",
+      "name": "Generate SQL"
+    },
+    {
+      "parameters": {
+        "jsCode": "const rows = $input.all().map(item => item.json);\n\nreturn [\n  {\n    json: {\n      queryResults: rows\n    }\n  }\n];"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        224,
+        0
+      ],
+      "id": "8f3917c3-41d1-4952-994f-456f15e78486",
+      "name": "Combine SQL Results"
+    }
+  ],
+  "pinData": {},
+  "connections": {
+    "When chat message received": {
+      "main": [
+        [
+          {
+            "node": "Generate SQL",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "OpenAI Chat Model": {
+      "ai_languageModel": [
+        [
+          {
+            "node": "Generate SQL",
+            "type": "ai_languageModel",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Execute Generated SQL": {
+      "main": [
+        [
+          {
+            "node": "Combine SQL Results",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "OpenAI Chat Model1": {
+      "ai_languageModel": [
+        [
+          {
+            "node": "Generate Human-Readable Answer",
+            "type": "ai_languageModel",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Generate SQL": {
+      "main": [
+        [
+          {
+            "node": "Execute Generated SQL",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Combine SQL Results": {
+      "main": [
+        [
+          {
+            "node": "Generate Human-Readable Answer",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "active": false,
+  "settings": {
+    "executionOrder": "v1",
+    "binaryMode": "separate"
+  },
+  "versionId": "7e815c4f-4821-49c7-b59a-8f624e52265f",
+  "meta": {
+    "templateCredsSetupCompleted": true,
+    "instanceId": "366244d705286eefc15c46f5d640811110d4cd647823dce29c26e9fecb71ae7e"
+  },
+  "nodeGroups": [],
+  "id": "ow4rkKuHLis8V1bS",
+  "tags": []
+}
