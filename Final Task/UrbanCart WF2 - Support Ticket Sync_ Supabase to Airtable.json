@@ -1,0 +1,400 @@
+{
+  "name": "UrbanCart WF2 - Support Ticket Sync: Supabase to Airtable",
+  "nodes": [
+    {
+      "parameters": {},
+      "type": "n8n-nodes-base.manualTrigger",
+      "typeVersion": 1,
+      "position": [
+        -432,
+        -32
+      ],
+      "id": "df9480a7-1014-4416-bb3f-62dbe7f4555e",
+      "name": "When clicking ‘Execute workflow’"
+    },
+    {
+      "parameters": {
+        "operation": "executeQuery",
+        "query": "SELECT\n    st.ticket_id,\n    c.full_name AS customer,\n    st.order_id,\n    st.issue_type,\n    st.description,\n    st.priority,\n    st.status,\n    st.assigned_team,\n    st.assigned_agent,\n    st.ai_summary,\n    st.resolution,\n    st.created_at,\n    st.updated_at,\n    st.resolved_at\nFROM support_tickets st\nJOIN customers c\n    ON st.customer_id = c.customer_id\nORDER BY st.created_at;",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.postgres",
+      "typeVersion": 2.7,
+      "position": [
+        -208,
+        -32
+      ],
+      "id": "a2c863e2-69ae-49fb-9d4d-fe6d5e040f58",
+      "name": "Execute a SQL query",
+      "credentials": {
+        "postgres": {
+          "id": "TXfsZKsSRuce36YB",
+          "name": "Postgres account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "a7926226-8ac6-4d48-a225-3d96d3885254",
+              "name": "Ticket ID",
+              "value": "={{$json.ticket_id}}",
+              "type": "string"
+            },
+            {
+              "id": "72e3dc5e-eb87-4187-99f8-037f1250db2f",
+              "name": "Customer",
+              "value": "={{$json.customer}}",
+              "type": "string"
+            },
+            {
+              "id": "e91d27cb-ec83-466e-91e8-8d8bf3b99502",
+              "name": "Order ID",
+              "value": "={{$json.order_id}}",
+              "type": "string"
+            },
+            {
+              "id": "6e16b5bc-0ef9-4dee-95c7-f399d73ad411",
+              "name": "Issue Type",
+              "value": "={{$json.issue_type}}",
+              "type": "string"
+            },
+            {
+              "id": "7ef92925-a2be-494a-8ab4-de3cbc611084",
+              "name": "Description",
+              "value": "={{$json.description}}",
+              "type": "string"
+            },
+            {
+              "id": "77cdc74d-2619-4b25-9496-d91084d17146",
+              "name": "Priority",
+              "value": "={{$json.priority}}",
+              "type": "string"
+            },
+            {
+              "id": "744faca0-88d0-4c83-a4a8-196f792449a1",
+              "name": "Status",
+              "value": "={{$json.status}}",
+              "type": "string"
+            },
+            {
+              "id": "c6549302-92a1-474a-920b-bad7ad670af1",
+              "name": "Assigned Team",
+              "value": "={{$json.assigned_team}}",
+              "type": "string"
+            },
+            {
+              "id": "9139e663-2893-4fc5-ad01-3ccb44918c9a",
+              "name": "Assigned Agent",
+              "value": "={{$json.assigned_agent}}",
+              "type": "string"
+            },
+            {
+              "id": "5511a376-d64e-48a2-af50-860ba02fd28b",
+              "name": "AI Summary",
+              "value": "={{$json.ai_summary}}",
+              "type": "string"
+            },
+            {
+              "id": "b784f127-e03d-4e37-a4eb-a10029f551e7",
+              "name": "Resolution",
+              "value": "={{$json.resolution}}",
+              "type": "string"
+            },
+            {
+              "id": "2559eb68-6b24-4142-a0de-2b4a9af4d0aa",
+              "name": "Created At",
+              "value": "={{$json.created_at}}",
+              "type": "string"
+            },
+            {
+              "id": "4b84c277-cef1-4ab6-b00e-a2dd5e4e4d94",
+              "name": "Updated At",
+              "value": "={{$json.updated_at}}",
+              "type": "string"
+            },
+            {
+              "id": "ceaac4ae-88b0-45b4-a749-5c65713abd7d",
+              "name": "Resolved At",
+              "value": "={{$json.resolved_at}}",
+              "type": "string"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.5,
+      "position": [
+        16,
+        -32
+      ],
+      "id": "42c6f3b5-3414-41e7-9477-f0357be6663e",
+      "name": "Format Support Ticket Data"
+    },
+    {
+      "parameters": {
+        "authentication": "airtableOAuth2Api",
+        "operation": "create",
+        "base": {
+          "__rl": true,
+          "value": "appHJ46YpgWhBZ8CT",
+          "mode": "list",
+          "cachedResultName": "UrbanCart Operations Hub",
+          "cachedResultUrl": "https://airtable.com/appHJ46YpgWhBZ8CT"
+        },
+        "table": {
+          "__rl": true,
+          "value": "tbleso408R4iSR50z",
+          "mode": "list",
+          "cachedResultName": "Support Tickets",
+          "cachedResultUrl": "https://airtable.com/appHJ46YpgWhBZ8CT/tbleso408R4iSR50z"
+        },
+        "columns": {
+          "mappingMode": "defineBelow",
+          "value": {
+            "Ticket ID": "={{ $json['Ticket ID'] }}",
+            "Customer": "={{ $json.Customer }}",
+            "Order ID": "={{ $json['Order ID'] }}",
+            "Issue Type": "={{ $json['Issue Type'] }}",
+            "Description": "={{ $json.Description }}",
+            "Priority": "={{ $json.Priority }}",
+            "Status": "={{ $json.Status }}",
+            "Assigned Team": "={{ $json['Assigned Team'] }}",
+            "Assigned Agent": "={{ $json['Assigned Agent'] }}",
+            "AI Summary": "={{ $json['AI Summary'] }}",
+            "Resolution": "={{ $json.Resolution }}",
+            "Created At": "={{ $json['Created At'] }}",
+            "Updated At": "={{ $json['Updated At'] }}",
+            "Resolved At": "={{ $json['Resolved At'] }}"
+          },
+          "matchingColumns": [],
+          "schema": [
+            {
+              "id": "Ticket ID",
+              "displayName": "Ticket ID",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": false
+            },
+            {
+              "id": "Customer",
+              "displayName": "Customer",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": false
+            },
+            {
+              "id": "Order ID",
+              "displayName": "Order ID",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": false
+            },
+            {
+              "id": "Issue Type",
+              "displayName": "Issue Type",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": false
+            },
+            {
+              "id": "Description",
+              "displayName": "Description",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": false
+            },
+            {
+              "id": "Priority",
+              "displayName": "Priority",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": false
+            },
+            {
+              "id": "Status",
+              "displayName": "Status",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": false
+            },
+            {
+              "id": "Assigned Team",
+              "displayName": "Assigned Team",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": false
+            },
+            {
+              "id": "Assigned Agent",
+              "displayName": "Assigned Agent",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": false
+            },
+            {
+              "id": "AI Summary",
+              "displayName": "AI Summary",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": false
+            },
+            {
+              "id": "Resolution",
+              "displayName": "Resolution",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": false
+            },
+            {
+              "id": "Created At",
+              "displayName": "Created At",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "dateTime",
+              "readOnly": false,
+              "removed": false
+            },
+            {
+              "id": "Updated At",
+              "displayName": "Updated At",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "dateTime",
+              "readOnly": false,
+              "removed": false
+            },
+            {
+              "id": "Resolved At",
+              "displayName": "Resolved At",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "dateTime",
+              "readOnly": false,
+              "removed": false
+            }
+          ],
+          "attemptToConvertTypes": false,
+          "convertFieldsToString": false
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.airtable",
+      "typeVersion": 2.2,
+      "position": [
+        240,
+        -32
+      ],
+      "id": "aa1e5847-6e20-4fd6-82ff-dc55910aec22",
+      "name": "Create a record",
+      "credentials": {
+        "airtableOAuth2Api": {
+          "id": "verr6X4wdUuKvKK0",
+          "name": "Airtable account"
+        }
+      }
+    }
+  ],
+  "pinData": {},
+  "connections": {
+    "When clicking ‘Execute workflow’": {
+      "main": [
+        [
+          {
+            "node": "Execute a SQL query",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Execute a SQL query": {
+      "main": [
+        [
+          {
+            "node": "Format Support Ticket Data",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Format Support Ticket Data": {
+      "main": [
+        [
+          {
+            "node": "Create a record",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "active": false,
+  "settings": {
+    "executionOrder": "v1",
+    "binaryMode": "separate"
+  },
+  "versionId": "bf749b57-88f8-4498-a5ba-22408c0eaca8",
+  "meta": {
+    "templateCredsSetupCompleted": true,
+    "instanceId": "366244d705286eefc15c46f5d640811110d4cd647823dce29c26e9fecb71ae7e"
+  },
+  "nodeGroups": [],
+  "id": "SvRz8xYA7sn7S3Xx",
+  "tags": []
+}

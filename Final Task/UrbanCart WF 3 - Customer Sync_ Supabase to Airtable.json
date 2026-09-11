@@ -1,0 +1,274 @@
+{
+  "name": "UrbanCart WF 3 - Customer Sync: Supabase to Airtable",
+  "nodes": [
+    {
+      "parameters": {},
+      "type": "n8n-nodes-base.manualTrigger",
+      "typeVersion": 1,
+      "position": [
+        -384,
+        -32
+      ],
+      "id": "60bee7f4-dbb2-4bbe-a802-94abec66f56f",
+      "name": "When clicking ‘Execute workflow’"
+    },
+    {
+      "parameters": {
+        "operation": "executeQuery",
+        "query": "SELECT\n    c.customer_id,\n    c.full_name AS name,\n    c.phone,\n    c.email,\n    c.city,\n    c.customer_status,\n    MAX(\n        COALESCE(m.created_at, cv.started_at, a.created_at)\n    ) AS last_interaction\nFROM customers c\nLEFT JOIN conversations cv\n    ON c.customer_id = cv.customer_id\nLEFT JOIN messages m\n    ON cv.conversation_id = m.conversation_id\nLEFT JOIN activities a\n    ON c.customer_id = a.customer_id\nGROUP BY\n    c.customer_id,\n    c.full_name,\n    c.phone,\n    c.email,\n    c.city,\n    c.customer_status\nORDER BY c.created_at;",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.postgres",
+      "typeVersion": 2.7,
+      "position": [
+        -160,
+        -32
+      ],
+      "id": "9d6ac77f-7a48-40ad-a6d8-27f8ccb725fa",
+      "name": "Execute a SQL query",
+      "credentials": {
+        "postgres": {
+          "id": "TXfsZKsSRuce36YB",
+          "name": "Postgres account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "5b871609-ec18-4bb2-a371-068d717628b1",
+              "name": "customer_id",
+              "value": "={{ $json.customer_id }}",
+              "type": "string"
+            },
+            {
+              "id": "c30c9c3b-db2b-4cbd-8ad2-afa50c3146b9",
+              "name": "name",
+              "value": "={{ $json.name }}",
+              "type": "string"
+            },
+            {
+              "id": "0491d27d-f9f9-4b0b-959d-e7772759b7a2",
+              "name": "phone",
+              "value": "={{ $json.phone }}",
+              "type": "string"
+            },
+            {
+              "id": "0ffb8909-ac27-497c-b1d2-49d3ba87612a",
+              "name": "email",
+              "value": "={{ $json.email }}",
+              "type": "string"
+            },
+            {
+              "id": "158a5ef7-8972-436d-a97f-4198579a0a6a",
+              "name": "city",
+              "value": "={{ $json.city }}",
+              "type": "string"
+            },
+            {
+              "id": "ecf0aadc-861d-453f-97bf-41308dadb71f",
+              "name": "customer_status",
+              "value": "={{ $json.customer_status }}",
+              "type": "string"
+            },
+            {
+              "id": "5ef945f7-b63a-4dda-8235-8f108a3f5f81",
+              "name": "last_interaction",
+              "value": "={{ $json.last_interaction }}",
+              "type": "string"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.5,
+      "position": [
+        64,
+        -32
+      ],
+      "id": "95748c95-ce01-40bf-ac26-aed43512e062",
+      "name": "Format Customer Data"
+    },
+    {
+      "parameters": {
+        "authentication": "airtableOAuth2Api",
+        "operation": "create",
+        "base": {
+          "__rl": true,
+          "value": "appHJ46YpgWhBZ8CT",
+          "mode": "list",
+          "cachedResultName": "UrbanCart Operations Hub",
+          "cachedResultUrl": "https://airtable.com/appHJ46YpgWhBZ8CT"
+        },
+        "table": {
+          "__rl": true,
+          "value": "tblAkvV9K75B4nPmB",
+          "mode": "list",
+          "cachedResultName": "Customers",
+          "cachedResultUrl": "https://airtable.com/appHJ46YpgWhBZ8CT/tblAkvV9K75B4nPmB"
+        },
+        "columns": {
+          "mappingMode": "defineBelow",
+          "value": {
+            "Customer ID": "={{$json.customer_id}}",
+            "Name": "={{$json.name}}",
+            "Phone": "={{ $json.phone }}",
+            "Email": "={{ $json.email }}",
+            "City": "={{ $json.city }}",
+            "Customer Status": "={{ $json.customer_status }}",
+            "Last Interaction": "={{ $json.last_interaction }}"
+          },
+          "matchingColumns": [],
+          "schema": [
+            {
+              "id": "Customer ID",
+              "displayName": "Customer ID",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": false
+            },
+            {
+              "id": "Name",
+              "displayName": "Name",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": false
+            },
+            {
+              "id": "Phone",
+              "displayName": "Phone",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": false
+            },
+            {
+              "id": "Email",
+              "displayName": "Email",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": false
+            },
+            {
+              "id": "City",
+              "displayName": "City",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": false
+            },
+            {
+              "id": "Customer Status",
+              "displayName": "Customer Status",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": false
+            },
+            {
+              "id": "Last Interaction",
+              "displayName": "Last Interaction",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "dateTime",
+              "readOnly": false,
+              "removed": false
+            }
+          ],
+          "attemptToConvertTypes": false,
+          "convertFieldsToString": false
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.airtable",
+      "typeVersion": 2.2,
+      "position": [
+        288,
+        -32
+      ],
+      "id": "12e19451-3437-447e-a7dc-ecace209ca32",
+      "name": "Create a record",
+      "credentials": {
+        "airtableOAuth2Api": {
+          "id": "verr6X4wdUuKvKK0",
+          "name": "Airtable account"
+        }
+      }
+    }
+  ],
+  "pinData": {},
+  "connections": {
+    "When clicking ‘Execute workflow’": {
+      "main": [
+        [
+          {
+            "node": "Execute a SQL query",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Execute a SQL query": {
+      "main": [
+        [
+          {
+            "node": "Format Customer Data",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Format Customer Data": {
+      "main": [
+        [
+          {
+            "node": "Create a record",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "active": false,
+  "settings": {
+    "executionOrder": "v1",
+    "binaryMode": "separate"
+  },
+  "versionId": "2ca5019b-596b-4af2-9f92-ad871d1a1d7e",
+  "meta": {
+    "templateCredsSetupCompleted": true,
+    "instanceId": "366244d705286eefc15c46f5d640811110d4cd647823dce29c26e9fecb71ae7e"
+  },
+  "nodeGroups": [],
+  "id": "xXYERjgHix6t2yEb",
+  "tags": []
+}

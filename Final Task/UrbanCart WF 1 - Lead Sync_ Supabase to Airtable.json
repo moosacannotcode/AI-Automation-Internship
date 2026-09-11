@@ -1,0 +1,382 @@
+{
+  "name": "UrbanCart WF 1 - Lead Sync: Supabase to Airtable",
+  "nodes": [
+    {
+      "parameters": {},
+      "type": "n8n-nodes-base.manualTrigger",
+      "typeVersion": 1,
+      "position": [
+        -736,
+        -48
+      ],
+      "id": "359386d2-37b0-4aa8-ad4c-7cd5b5e49af6",
+      "name": "When clicking ‘Execute workflow’"
+    },
+    {
+      "parameters": {
+        "operation": "executeQuery",
+        "query": "SELECT\n    l.lead_id,\n    c.full_name AS customer,\n    c.phone,\n    p.product_name AS product,\n    l.budget,\n    c.city AS location,\n    l.purchase_intent,\n    l.lead_source,\n    l.priority,\n    l.lead_status,\n    l.assigned_to,\n    l.next_follow_up,\n    l.notes\nFROM leads l\nJOIN customers c\n    ON l.customer_id = c.customer_id\nLEFT JOIN products p\n    ON l.product_id = p.product_id\nORDER BY l.created_at;",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.postgres",
+      "typeVersion": 2.7,
+      "position": [
+        -512,
+        -48
+      ],
+      "id": "5ba2a156-589c-48f7-9c88-476746d98602",
+      "name": "Execute a SQL query",
+      "credentials": {
+        "postgres": {
+          "id": "TXfsZKsSRuce36YB",
+          "name": "Postgres account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "26aa3ac6-0013-4971-9ca1-b7ce4ebd0492",
+              "name": "lead_id",
+              "value": "={{$json.lead_id}}",
+              "type": "string"
+            },
+            {
+              "id": "425cf080-f4f4-4ed3-9a3f-bab0efdbb86e",
+              "name": "customer",
+              "value": "={{$json.customer}}",
+              "type": "string"
+            },
+            {
+              "id": "3f24f415-8e50-474f-860a-c600906bb695",
+              "name": "phone",
+              "value": "={{$json.phone}}",
+              "type": "string"
+            },
+            {
+              "id": "01aac3e9-7fa7-46a6-94fe-b7839e787499",
+              "name": "product",
+              "value": "=\t{{$json.product}}",
+              "type": "string"
+            },
+            {
+              "id": "a760774d-89d4-4b4c-a23a-65cf17224c77",
+              "name": "budget",
+              "value": "={{$json.budget}}",
+              "type": "string"
+            },
+            {
+              "id": "ab4077ac-7ee0-4e2d-93e0-85b039d0cfcf",
+              "name": "location",
+              "value": "=\t{{$json.location}}",
+              "type": "string"
+            },
+            {
+              "id": "4e0d2521-3b85-4332-894b-678873ddc387",
+              "name": "purchase_intent",
+              "value": "={{$json.purchase_intent}}",
+              "type": "string"
+            },
+            {
+              "id": "cc723481-bbdd-4cc7-9def-cc2c434d9fb7",
+              "name": "lead_status",
+              "value": "={{$json.lead_status}}",
+              "type": "string"
+            },
+            {
+              "id": "2d3b1a30-63c9-4b01-9854-5311cd460e3f",
+              "name": "priority",
+              "value": "={{$json.priority}}",
+              "type": "string"
+            },
+            {
+              "id": "1a62e21b-4da1-4c51-93d3-930994493235",
+              "name": "lead_source",
+              "value": "={{$json.lead_source}}",
+              "type": "string"
+            },
+            {
+              "id": "56c4edea-0b3c-42ea-9de0-abe9eca6cc0f",
+              "name": "assigned_to",
+              "value": "={{$json.assigned_to}}",
+              "type": "string"
+            },
+            {
+              "id": "9a4156e6-0939-4cea-89a5-4ec47f21db1f",
+              "name": "next_follow_up",
+              "value": "={{$json.next_follow_up}}",
+              "type": "string"
+            },
+            {
+              "id": "bb031e2e-d11d-443b-b778-ef403cfd6afe",
+              "name": "notes",
+              "value": "={{$json.notes}}",
+              "type": "string"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.5,
+      "position": [
+        -288,
+        -48
+      ],
+      "id": "978fe9ac-376a-4908-aa56-49cece0c12b3",
+      "name": "Format Lead Data"
+    },
+    {
+      "parameters": {
+        "authentication": "airtableOAuth2Api",
+        "operation": "create",
+        "base": {
+          "__rl": true,
+          "value": "appHJ46YpgWhBZ8CT",
+          "mode": "list",
+          "cachedResultName": "UrbanCart Operations Hub",
+          "cachedResultUrl": "https://airtable.com/appHJ46YpgWhBZ8CT"
+        },
+        "table": {
+          "__rl": true,
+          "value": "tblBNLHNKi8OwmLzD",
+          "mode": "list",
+          "cachedResultName": "Leads",
+          "cachedResultUrl": "https://airtable.com/appHJ46YpgWhBZ8CT/tblBNLHNKi8OwmLzD"
+        },
+        "columns": {
+          "mappingMode": "defineBelow",
+          "value": {
+            "Lead ID": "={{ $json.lead_id }}",
+            "Customer": "={{ $json.customer }}",
+            "Phone": "={{ $json.phone }}",
+            "Product": "={{ $json.product }}",
+            "Budget": "={{ $json.budget }}",
+            "Location": "={{ $json.location }}",
+            "Purchase Intent": "={{ $json.purchase_intent }}",
+            "Lead Status": "={{ $json.lead_status }}",
+            "Priority": "={{ $json.priority }}",
+            "Lead Source": "={{ $json.lead_source }}",
+            "Assigned To": "={{ $json.assigned_to }}",
+            "Next Follow-up": "={{ $json.next_follow_up ? DateTime.fromISO($json.next_follow_up).toISO() : null }}",
+            "Notes": "={{ $json.notes }}"
+          },
+          "matchingColumns": [],
+          "schema": [
+            {
+              "id": "Lead ID",
+              "displayName": "Lead ID",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": false
+            },
+            {
+              "id": "Customer",
+              "displayName": "Customer",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": false
+            },
+            {
+              "id": "Phone",
+              "displayName": "Phone",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": false
+            },
+            {
+              "id": "Product",
+              "displayName": "Product",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": false
+            },
+            {
+              "id": "Budget",
+              "displayName": "Budget",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "number",
+              "readOnly": false,
+              "removed": false
+            },
+            {
+              "id": "Location",
+              "displayName": "Location",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": false
+            },
+            {
+              "id": "Purchase Intent",
+              "displayName": "Purchase Intent",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": false
+            },
+            {
+              "id": "Lead Status",
+              "displayName": "Lead Status",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": false
+            },
+            {
+              "id": "Priority",
+              "displayName": "Priority",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": false
+            },
+            {
+              "id": "Lead Source",
+              "displayName": "Lead Source",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": false
+            },
+            {
+              "id": "Assigned To",
+              "displayName": "Assigned To",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": false
+            },
+            {
+              "id": "Next Follow-up",
+              "displayName": "Next Follow-up",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "dateTime",
+              "readOnly": false,
+              "removed": false
+            },
+            {
+              "id": "Notes",
+              "displayName": "Notes",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": false
+            }
+          ],
+          "attemptToConvertTypes": false,
+          "convertFieldsToString": false
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.airtable",
+      "typeVersion": 2.2,
+      "position": [
+        -64,
+        -48
+      ],
+      "id": "2d9b437c-eda1-4a09-888a-0c40c4c4e75c",
+      "name": "Create a record",
+      "credentials": {
+        "airtableOAuth2Api": {
+          "id": "verr6X4wdUuKvKK0",
+          "name": "Airtable account"
+        }
+      }
+    }
+  ],
+  "pinData": {},
+  "connections": {
+    "When clicking ‘Execute workflow’": {
+      "main": [
+        [
+          {
+            "node": "Execute a SQL query",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Execute a SQL query": {
+      "main": [
+        [
+          {
+            "node": "Format Lead Data",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Format Lead Data": {
+      "main": [
+        [
+          {
+            "node": "Create a record",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "active": false,
+  "settings": {
+    "executionOrder": "v1",
+    "binaryMode": "separate"
+  },
+  "versionId": "699825d5-b500-49aa-ba76-008e09c6e24e",
+  "meta": {
+    "templateCredsSetupCompleted": true,
+    "instanceId": "366244d705286eefc15c46f5d640811110d4cd647823dce29c26e9fecb71ae7e"
+  },
+  "nodeGroups": [],
+  "id": "jp7Pm8zptk8y2vtX",
+  "tags": []
+}
